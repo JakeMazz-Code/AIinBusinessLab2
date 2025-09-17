@@ -1,5 +1,5 @@
 {
-  "generated_at": "2025-09-17T20:58:22.299017+00:00",
+  "generated_at": "2025-09-17T21:32:36.044706+00:00",
   "customer_count": 500,
   "churn_rate": 0.38,
   "monthly_recurring_revenue": 9451.83,
@@ -177,6 +177,7 @@
       ]
     }
   },
+  "report_html": "churn_analysis_report.html",
   "figures": {
     "plan_churn_rate": "plan_churn_rate.png",
     "tenure_distribution": "tenure_distribution.png",

@@ -1,5 +1,5 @@
 # Customer Churn Analysis Report
-_Generated on 2025-09-17 20:58 UTC_
+_Generated on 2025-09-17 21:32 UTC_
 
 ## 1. Business Snapshot
 - Total customers analyzed: 500
@@ -181,3 +181,4 @@ weighted avg       0.60      0.62      0.60       150
 - Visualizations: `figures/`
 - Customer-level scores: `churn_risk_scoring.csv`
 - Metrics summary (Streamlit ready): `metrics_summary.json`
+- HTML report: `churn_analysis_report.html`

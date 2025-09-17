@@ -29,6 +29,10 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+try:
+    import markdown  # type: ignore[import]
+except ImportError:
+    markdown = None  # type: ignore
 import seaborn as sns
 from sklearn.base import clone
 from sklearn.compose import ColumnTransformer
@@ -51,6 +55,7 @@ DATA_PATH = Path(__file__).with_name("customer_churn_data.csv")
 REPORT_DIR = Path(__file__).with_name("reports")
 FIGURES_DIR = REPORT_DIR / "figures"
 REPORT_PATH = REPORT_DIR / "churn_analysis_report.md"
+REPORT_HTML_PATH = REPORT_DIR / "churn_analysis_report.html"
 PREDICTIONS_PATH = REPORT_DIR / "churn_risk_scoring.csv"
 SUMMARY_PATH = REPORT_DIR / "metrics_summary.json"
 
@@ -589,6 +594,14 @@ def format_dataframe_block(df: pd.DataFrame) -> str:
     return "\n".join(["```", df.to_string(), "```"])
 
 
+def write_html_report(markdown_text: str) -> None:
+    if markdown is None:
+        return  # HTML export is optional if the markdown package is missing
+    html_body = markdown.markdown(markdown_text, extensions=["tables"])
+    html_template = """<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n<meta charset=\"utf-8\" />\n<title>Customer Churn Analysis Report</title>\n<style>body{{font-family:Arial, sans-serif; margin:40px; line-height:1.6;}} table{{border-collapse:collapse;width:100%;}} th,td{{border:1px solid #ccc;padding:6px;}} th{{background:#f4f4f4;}} code{{background:#f7f7f7;padding:2px 4px;}}</style>\n</head>\n<body>\n{html_body}\n</body>\n</html>"""
+    html_doc = html_template.format(html_body=html_body)
+    REPORT_HTML_PATH.write_text(html_doc, encoding="utf-8")
+
 def build_report(
     df: pd.DataFrame,
     churn_rate: float,
@@ -728,6 +741,7 @@ def build_report(
             f"- Visualizations: `{FIGURES_DIR.name}/`",
             f"- Customer-level scores: `{PREDICTIONS_PATH.name}`",
             f"- Metrics summary (Streamlit ready): `{SUMMARY_PATH.name}`",
+            f"- HTML report: `{REPORT_HTML_PATH.name}`",
         ]
     )
 
@@ -821,6 +835,7 @@ def main() -> None:
         top_risk=top_risk,
     )
     REPORT_PATH.write_text(report_text, encoding="utf-8")
+    write_html_report(report_text)
 
     summary_payload: Dict[str, Any] = {
         "generated_at": datetime.now(UTC).isoformat(),
@@ -838,6 +853,7 @@ def main() -> None:
             key: table.round(3).reset_index().to_dict(orient="list")
             for key, table in segment_tables.items()
         },
+        "report_html": REPORT_HTML_PATH.name,
         "figures": {key: path.name for key, path in chart_paths.items()},
         "feature_ranking": ranking.round(3).reset_index().rename(columns={"index": "feature"}).to_dict(orient="list"),
         "logistic_coefficients": logistic_coefficients.round({"coefficient": 3, "odds_ratio": 2}).to_dict(orient="list"),
@@ -869,5 +885,6 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+
 
 

@@ -82,6 +82,10 @@ prob_threshold = st.sidebar.slider(
     value=float(round(threshold_default, 2)),
     step=0.05,
 )
+st.sidebar.caption(
+    "Move the slider to decide how sure the model must be before a customer is flagged."
+    " A value of 0.70 means we only flag customers when the model is 70% confident they will churn."
+)
 plan_filter = st.sidebar.multiselect(
     "Plan types",
     options=sorted(predictions["plan_type"].unique()),
@@ -91,24 +95,24 @@ plan_filter = st.sidebar.multiselect(
 filtered = predictions[predictions["plan_type"].isin(plan_filter)].copy()
 filtered["is_high_risk"] = filtered["logistic_probability"] >= prob_threshold
 high_risk = filtered[filtered["is_high_risk"]]
+st.sidebar.metric("Customers above threshold", f"{len(high_risk):,}")
+st.sidebar.caption(
+    "As you raise the threshold, this count drops because fewer customers meet the higher bar."
+)
+
+st.info(
+    "**How to read the dashboard:** The slider controls how strict we are about calling someone high-risk."
+    " The table and metrics update instantly, so you can test different intervention sizes."
+)
 
 st.subheader("Business Pulse")
 col1, col2, col3, col4 = st.columns(4)
 with col1:
-    render_metric(
-        "Customers",
-        f"{int(summary['customer_count']):,}",
-    )
+    render_metric("Customers", f"{int(summary['customer_count']):,}")
 with col2:
-    render_metric(
-        "Churn rate",
-        f"{summary['churn_rate']:.1%}",
-    )
+    render_metric("Churn rate", f"{summary['churn_rate']:.1%}")
 with col3:
-    render_metric(
-        "Monthly revenue",
-        f"${summary['monthly_recurring_revenue']:,.0f}",
-    )
+    render_metric("Monthly revenue", f"${summary['monthly_recurring_revenue']:,.0f}")
 with col4:
     render_metric(
         "High-risk customers",
@@ -162,12 +166,7 @@ st.divider()
 segment_data = summary.get("segment_highlights", {})
 if segment_data:
     st.subheader("Segment Highlights")
-    tabs = st.tabs([
-        "Tenure",
-        "Inactivity",
-        "Support",
-        "Plan Profile",
-    ])
+    tabs = st.tabs(["Tenure", "Inactivity", "Support", "Plan Profile"])
     tab_keys = ["tenure", "inactivity", "support", "plan_profile"]
     for tab, key in zip(tabs, tab_keys):
         with tab:
@@ -215,4 +214,3 @@ render_chart_gallery(summary.get("figures", {}))
 st.caption(
     "Need to refresh? Rerun `python Existing.py` to regenerate metrics and visuals, then reload this page."
 )
-

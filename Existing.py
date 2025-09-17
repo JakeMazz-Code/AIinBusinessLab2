@@ -623,41 +623,66 @@ def build_report(
 ) -> str:
     timestamp = datetime.now(UTC).strftime("%Y-%m-%d %H:%M UTC")
 
+    top_features = ranking.head(3).round(3)
+    top_plan = plan_churn.head(1)
+    top_plan_name = top_plan.index[0]
+    top_plan_rate = top_plan.iloc[0]
+
     report_lines = [
         "# Customer Churn Analysis Report",
         f"_Generated on {timestamp}_",
         "",
-        "## 1. Business Snapshot",
-        f"- Total customers analyzed: {len(df)}",
-        f"- Overall churn rate: {churn_rate:.1%} (approximately 1 in {int(round(1 / churn_rate))} customers)",
-        f"- Monthly recurring revenue: ${revenue_summary['monthly_recurring_revenue']:,.0f}",
-        (
-            f"- High-risk customers (probability = {revenue_summary['threshold']:.0%}): "
-            f"{revenue_summary['at_risk_count']} ({revenue_summary['at_risk_share']:.1%} of base)"
-        ),
-        (
-            f"- Probability-weighted revenue at risk over {FORECAST_MONTHS} months: "
-            f"${revenue_summary['weighted_loss_6m']:,.0f}"
-        ),
-        "",
-        "### Cohort Averages (0 = retained, 1 = churned)",
-        format_dataframe_block(cohort_means.round(2)),
-        "",
-        "## 2. Driver Analysis",
-        "- Feature ranking is based on Pearson correlation with churn, mean differences vs. retained customers, and mutual information.",
-        format_dataframe_block(ranking.round(3)),
-        "",
-        "### 2.1 Correlation Matrix",
-        format_dataframe_block(correlation_matrix.round(3)),
-        "",
-        "### 2.2 Mutual Information with Churn",
-        format_dataframe_block(mutual_info.to_frame().round(3)),
-        "",
-        "### 2.3 Logistic Regression Coefficients (odds ratios)",
-        format_dataframe_block(logistic_coefficients.round({"coefficient": 3, "odds_ratio": 2})),
-        "",
-        "## 3. Segment Spotlight",
+        "## Executive Brief",
+        "**Snapshot**",
+        f"- Overall churn rate sits at {churn_rate:.1%} (~1 in {int(round(1 / churn_rate))} customers) with monthly revenue of ${revenue_summary['monthly_recurring_revenue']:,.0f}.",
+        f"- {revenue_summary['at_risk_count']} customers exceed the {revenue_summary['threshold']:.0%} risk threshold, representing ${revenue_summary['weighted_loss_6m']:,.0f} in probability-weighted six-month exposure.",
+        "**Top churn drivers**",
     ]
+    for feature, row in top_features.iterrows():
+        report_lines.append(
+            f"- {feature}: correlation {row['correlation']:.2f}, mean delta {row['mean_delta_vs_retained']:.2f}"
+        )
+    report_lines.extend(
+        [
+            f"- {top_plan_name} plan members churn most often at {top_plan_rate:.1%}, signalling pricing or experience gaps.",
+            "**Next steps**",
+            "1. Target inactive, short-tenure, low-spend customers with a re-engagement campaign and personalised incentives before they cancel.",
+            "2. Prioritise Basic-plan outreach and review packaging to reduce the 48% churn rate.",
+            "3. Bolster support experience for heavy-ticket users (3-5 tickets) who churn at 47%.",
+            "4. Track KPI impact using the rule-based alerts (69% recall) and recalibrate the logistic model for precision targeting.",
+            "",
+            "## 1. Business Snapshot",
+            f"- Total customers analyzed: {len(df)}",
+            f"- Overall churn rate: {churn_rate:.1%} (approximately 1 in {int(round(1 / churn_rate))} customers)",
+            f"- Monthly recurring revenue: ${revenue_summary['monthly_recurring_revenue']:,.0f}",
+            (
+                f"- High-risk customers (probability = {revenue_summary['threshold']:.0%}): "
+                f"{revenue_summary['at_risk_count']} ({revenue_summary['at_risk_share']:.1%} of base)"
+            ),
+            (
+                f"- Probability-weighted revenue at risk over {FORECAST_MONTHS} months: "
+                f"${revenue_summary['weighted_loss_6m']:,.0f}"
+            ),
+            "",
+            "### Cohort Averages (0 = retained, 1 = churned)",
+            format_dataframe_block(cohort_means.round(2)),
+            "",
+            "## 2. Driver Analysis",
+            "- Feature ranking is based on Pearson correlation with churn, mean differences vs. retained customers, and mutual information.",
+            format_dataframe_block(ranking.round(3)),
+            "",
+            "### 2.1 Correlation Matrix",
+            format_dataframe_block(correlation_matrix.round(3)),
+            "",
+            "### 2.2 Mutual Information with Churn",
+            format_dataframe_block(mutual_info.to_frame().round(3)),
+            "",
+            "### 2.3 Logistic Regression Coefficients (odds ratios)",
+            format_dataframe_block(logistic_coefficients.round({"coefficient": 3, "odds_ratio": 2})),
+            "",
+            "## 3. Segment Spotlight",
+        ]
+    )
 
     segment_titles = [
         ("tenure", "Tenure bucket churn profile"),
@@ -703,7 +728,7 @@ def build_report(
             "",
             "## 5. Revenue Impact & High-Risk Cohort",
             (
-                f"- Customers flagged as high risk (= {revenue_summary['threshold']:.0%} probability): "
+                f"- Customers flagged as high risk (? {revenue_summary['threshold']:.0%} probability): "
                 f"{revenue_summary['at_risk_count']} averaging {revenue_summary['avg_probability_at_risk']:.0%} churn likelihood."
             ),
             (
@@ -718,34 +743,32 @@ def build_report(
             "### Highest-Risk Customers (Top 10 by Logistic Probability)",
             format_dataframe_block(top_risk.round({"logistic_probability": 3})),
             "",
-            "## 6. Visual Insights",
-        ]
-    )
-
-    for label, path in chart_paths.items():
-        rel_path = path.relative_to(REPORT_DIR)
-        pretty_label = label.replace("_", " ").title()
-        report_lines.append(f"![{pretty_label}]({rel_path.as_posix()})")
-        report_lines.append("")
-
-    report_lines.extend(
-        [
-            "## 7. Recommendations & Next Steps",
+            "## 6. Synthetic Data Validation",
+            "- Generate stress-test cohorts with `python generate_synthetic_churn.py --rows 1000 --output synthetic_customer_churn.csv`.",
+            "- Temporarily swap the synthetic file in place of `customer_churn_data.csv` and rerun `python Existing.py` to compare churn rate, driver ranking, and model metrics against historical trends.",
+            "- Watch for deviations (e.g., higher synthetic churn or different leading drivers) to adapt retention tactics for that scenario.",
+            "",
+            "## 7. Visual Assets",
+            "- PNG figures are exported to `reports/figures/` for slide decks or the dashboard; inline images are omitted here to keep the report portable.",
+            "- The Streamlit dashboard surfaces these visuals interactively alongside filters.",
+            "",
+            "## 8. Recommendations & Next Steps",
             "1. Prioritize outreach for short-tenure, low-spend customers who recently filed multiple tickets and have been inactive; they trigger most rule conditions.",
             "2. Launch a re-engagement sequence for customers inactive 30+ days, combining personalized offers with content recommendations.",
             "3. Use the logistic regression scores to focus retention efforts on the top third of customers by churn probability and A/B test targeted offers.",
             "4. Collect additional behavioral signals (content engagement, satisfaction scores) and validate the models on a future cohort or synthetic holdout set before deployment.",
             "",
-            "## 8. Deliverables",
+            "## 9. Deliverables",
             f"- Executive summary: `{REPORT_PATH.name}`",
-            f"- Visualizations: `{FIGURES_DIR.name}/`",
+            f"- HTML report: `{REPORT_HTML_PATH.name}`",
+            f"- Visualizations directory: `{FIGURES_DIR.name}/`",
             f"- Customer-level scores: `{PREDICTIONS_PATH.name}`",
             f"- Metrics summary (Streamlit ready): `{SUMMARY_PATH.name}`",
-            f"- HTML report: `{REPORT_HTML_PATH.name}`",
         ]
     )
 
-    return "\n".join(report_lines)
+    report_lines.append("")
+    return "\\n".join(report_lines)
 
 
 def print_section(title: str, lines: Iterable[str]) -> None:
@@ -885,6 +908,8 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+
+
 
 
 

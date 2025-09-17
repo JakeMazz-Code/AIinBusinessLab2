@@ -9,6 +9,7 @@ import json
 from pathlib import Path
 from typing import Dict
 
+import altair as alt
 import pandas as pd
 import streamlit as st
 
@@ -17,6 +18,7 @@ REPORT_DIR = BASE_DIR / "reports"
 PREDICTIONS_PATH = REPORT_DIR / "churn_risk_scoring.csv"
 SUMMARY_PATH = REPORT_DIR / "metrics_summary.json"
 FIGURES_DIR = REPORT_DIR / "figures"
+REPORT_MARKDOWN_PATH = REPORT_DIR / "churn_analysis_report.md"
 
 PAGE_CONFIG = {
     "page_title": "Customer Churn Command Center",
@@ -52,6 +54,13 @@ def load_summary() -> Dict:
         return json.load(handle)
 
 
+@st.cache_data(show_spinner=False)
+def load_markdown_report() -> str:
+    if not REPORT_MARKDOWN_PATH.exists():
+        return "Report markdown not found. Rerun `python Existing.py` to regenerate it."
+    return REPORT_MARKDOWN_PATH.read_text(encoding="utf-8")
+
+
 def render_metric(label: str, value: str, delta: str | None = None) -> None:
     st.metric(label, value, delta)
 
@@ -70,8 +79,37 @@ def render_chart_gallery(figures: Dict[str, str]) -> None:
             st.image(str(figure_path), caption=pretty, use_column_width=True)
 
 
+def render_probability_histogram(df: pd.DataFrame, threshold: float) -> None:
+    if df.empty:
+        st.info("No customers match the current filters.")
+        return
+    chart = (
+        alt.Chart(df)
+        .transform_bin(
+            ["prob_bucket", "prob_bucket_end"],
+            "logistic_probability",
+            bin=alt.Bin(maxbins=30),
+        )
+        .mark_bar(color="#4c78a8")
+        .encode(
+            x=alt.X("prob_bucket:Q", title="Predicted churn probability"),
+            x2="prob_bucket_end:Q",
+            y=alt.Y("count()", title="Customers"),
+            tooltip=[alt.Tooltip("count()", title="Customers")],
+        )
+    )
+    threshold_rule = alt.Chart(pd.DataFrame({"threshold": [threshold]})).mark_rule(color="crimson").encode(
+        x="threshold"
+    )
+    st.altair_chart(chart + threshold_rule, use_container_width=True)
+    st.caption(
+        "Histogram shows how many customers fall into each probability bucket. The red line is the current threshold."
+    )
+
+
 summary = load_summary()
 predictions = load_predictions()
+report_markdown = load_markdown_report()
 
 st.sidebar.header("Filters")
 threshold_default = float(summary.get("at_risk_threshold", 0.6))
@@ -104,6 +142,11 @@ st.info(
     "**How to read the dashboard:** The slider controls how strict we are about calling someone high-risk."
     " The table and metrics update instantly, so you can test different intervention sizes."
 )
+
+render_probability_histogram(filtered, prob_threshold)
+
+with st.expander("Executive summary preview"):
+    st.markdown(report_markdown)
 
 st.subheader("Business Pulse")
 col1, col2, col3, col4 = st.columns(4)

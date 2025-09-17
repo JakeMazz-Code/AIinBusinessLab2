@@ -4,4 +4,6 @@ matplotlib>=3.6
 seaborn>=0.12
 scikit-learn>=1.2
 streamlit>=1.31
+altair>=5
 markdown>=3.5
+Faker>=19

@@ -20,6 +20,12 @@ SUMMARY_PATH = REPORT_DIR / "metrics_summary.json"
 FIGURES_DIR = REPORT_DIR / "figures"
 REPORT_MARKDOWN_PATH = REPORT_DIR / "churn_analysis_report.md"
 
+SYNTHETIC_REPORT_DIR = REPORT_DIR / "synthetic"
+SYNTHETIC_PREDICTIONS_PATH = SYNTHETIC_REPORT_DIR / "churn_risk_scoring.csv"
+SYNTHETIC_SUMMARY_PATH = SYNTHETIC_REPORT_DIR / "metrics_summary.json"
+SYNTHETIC_FIGURES_DIR = SYNTHETIC_REPORT_DIR / "figures"
+SYNTHETIC_MARKDOWN_PATH = SYNTHETIC_REPORT_DIR / "churn_analysis_report.md"
+
 PAGE_CONFIG = {
     "page_title": "Customer Churn Command Center",
     "layout": "wide",
@@ -33,51 +39,77 @@ st.caption(
     "Generated with `Existing.py`. Rerun the pipeline whenever the source data changes."
 )
 
-if not PREDICTIONS_PATH.exists() or not SUMMARY_PATH.exists():
+DATASET_CATALOG = {
+    "Historical (actual data)": {
+        "slug": "historical",
+        "predictions": PREDICTIONS_PATH,
+        "summary": SUMMARY_PATH,
+        "report": REPORT_MARKDOWN_PATH,
+        "figures": FIGURES_DIR,
+        "is_synthetic": False,
+    }
+}
+
+if SYNTHETIC_SUMMARY_PATH.exists() and SYNTHETIC_PREDICTIONS_PATH.exists():
+    DATASET_CATALOG["Synthetic scenario (test data)"] = {
+        "slug": "synthetic",
+        "predictions": SYNTHETIC_PREDICTIONS_PATH,
+        "summary": SYNTHETIC_SUMMARY_PATH,
+        "report": SYNTHETIC_MARKDOWN_PATH,
+        "figures": SYNTHETIC_FIGURES_DIR,
+        "is_synthetic": True,
+    }
+
+AVAILABLE_DATASETS = {
+    name: cfg
+    for name, cfg in DATASET_CATALOG.items()
+    if cfg["summary"].exists() and cfg["predictions"].exists()
+}
+
+if not AVAILABLE_DATASETS:
     st.warning(
-        "Outputs not found. Run `python Existing.py` first to generate the report, risk scores, and summary files."
+        "Outputs not found. Run `python Existing.py` to generate the baseline. Use `python run_synthetic_analysis.py` for the synthetic scenario."
     )
     st.stop()
 
 
 @st.cache_data(show_spinner=False)
-def load_predictions() -> pd.DataFrame:
-    df = pd.read_csv(PREDICTIONS_PATH)
+def load_predictions(path: Path) -> pd.DataFrame:
+    df = pd.read_csv(path)
     numeric_cols = df.select_dtypes(include=["float", "int"]).columns
     df[numeric_cols] = df[numeric_cols].apply(pd.to_numeric, errors="coerce")
     return df
 
 
 @st.cache_data(show_spinner=False)
-def load_summary() -> Dict:
-    with SUMMARY_PATH.open("r", encoding="utf-8") as handle:
+def load_summary(path: Path) -> Dict:
+    with path.open("r", encoding="utf-8") as handle:
         return json.load(handle)
 
 
 @st.cache_data(show_spinner=False)
-def load_markdown_report() -> str:
-    if not REPORT_MARKDOWN_PATH.exists():
-        return "Report markdown not found. Rerun `python Existing.py` to regenerate it."
-    return REPORT_MARKDOWN_PATH.read_text(encoding="utf-8")
+def load_markdown_report(path: Path) -> str:
+    if not path.exists():
+        return "Report markdown not found. Rerun the corresponding pipeline to regenerate it."
+    return path.read_text(encoding="utf-8")
 
 
 def render_metric(label: str, value: str, delta: str | None = None) -> None:
     st.metric(label, value, delta)
 
 
-def render_chart_gallery(figures: Dict[str, str]) -> None:
+def render_chart_gallery(figures: Dict[str, str], base_dir: Path) -> None:
     if not figures:
         st.info("Charts were not exported. Re-run `python Existing.py` to generate them.")
         return
     cols = st.columns(2)
     for idx, (label, filename) in enumerate(figures.items()):
-        figure_path = FIGURES_DIR / filename
+        figure_path = base_dir / filename
         if not figure_path.exists():
             continue
         pretty = label.replace("_", " ").title()
         with cols[idx % 2]:
             st.image(str(figure_path), caption=pretty, use_column_width=True)
-
 
 def render_probability_histogram(df: pd.DataFrame, threshold: float) -> None:
     if df.empty:
@@ -107,9 +139,25 @@ def render_probability_histogram(df: pd.DataFrame, threshold: float) -> None:
     )
 
 
-summary = load_summary()
-predictions = load_predictions()
-report_markdown = load_markdown_report()
+dataset_names = list(AVAILABLE_DATASETS.keys())
+default_index = dataset_names.index("Historical (actual data)") if "Historical (actual data)" in dataset_names else 0
+selected_dataset = st.sidebar.selectbox("Dataset to display", dataset_names, index=default_index)
+dataset_config = AVAILABLE_DATASETS[selected_dataset]
+
+summary = load_summary(dataset_config["summary"])
+predictions = load_predictions(dataset_config["predictions"])
+report_markdown = load_markdown_report(dataset_config["report"])
+figures_dir = dataset_config["figures"]
+dataset_slug = dataset_config["slug"]
+is_synthetic = dataset_config["is_synthetic"]
+dataset_label = summary.get("dataset_label", selected_dataset)
+
+st.sidebar.markdown(f"**Dataset:** {dataset_label}")
+if is_synthetic:
+    st.sidebar.warning("Synthetic scenario - generated test data, not actual customers.")
+    st.warning("Synthetic scenario in view. Metrics reflect generated data for experimentation and are not real customer outcomes.")
+
+st.markdown(f"**Dataset in view:** {dataset_label}")
 
 st.sidebar.header("Filters")
 threshold_default = float(summary.get("at_risk_threshold", 0.6))
@@ -148,7 +196,7 @@ render_probability_histogram(filtered, prob_threshold)
 with st.expander("Executive summary preview"):
     st.markdown(report_markdown)
 
-st.subheader("Business Pulse")
+st.subheader(f"Business Pulse - {dataset_label}")
 col1, col2, col3, col4 = st.columns(4)
 with col1:
     render_metric("Customers", f"{int(summary['customer_count']):,}")
@@ -177,7 +225,7 @@ with col6:
 
 st.divider()
 
-st.subheader("High-Risk Customer List")
+st.subheader(f"High-Risk Customer List - {dataset_label}")
 st.caption(
     "Use filters to target specific plan types or adjust the probability cut-off to size retention campaigns."
 )
@@ -200,7 +248,7 @@ st.dataframe(
 st.download_button(
     "Download filtered customers",
     data=high_risk.to_csv(index=False).encode("utf-8"),
-    file_name="high_risk_customers.csv",
+    file_name=f"high_risk_customers_{dataset_slug}.csv",
     mime="text/csv",
 )
 
@@ -252,7 +300,7 @@ if coeff_payload:
 st.divider()
 
 st.subheader("Visual Gallery")
-render_chart_gallery(summary.get("figures", {}))
+render_chart_gallery(summary.get("figures", {}), figures_dir)
 
 st.caption(
     "Need to refresh? Rerun `python Existing.py` to regenerate metrics and visuals, then reload this page."

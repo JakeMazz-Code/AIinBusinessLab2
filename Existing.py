@@ -114,9 +114,11 @@ def ensure_output_dirs() -> None:
     FIGURES_DIR.mkdir(parents=True, exist_ok=True)
 
 
-def load_dataset(csv_path: Path = DATA_PATH) -> pd.DataFrame:
+def load_dataset(csv_path: Path | None = None) -> pd.DataFrame:
     """Load and type-cast the churn dataset."""
 
+    if csv_path is None:
+        csv_path = DATA_PATH
     df = pd.read_csv(csv_path)
     df.columns = [col.strip().lower() for col in df.columns]
     df["churned"] = pd.to_numeric(df["churned"], errors="coerce").fillna(0).astype(int)

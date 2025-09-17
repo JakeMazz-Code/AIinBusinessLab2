@@ -1,28 +1,28 @@
 {
-  "dataset_label": "Historical dataset",
-  "generated_at": "2025-09-17T23:34:45.697181+00:00",
-  "customer_count": 500,
-  "churn_rate": 0.38,
-  "monthly_recurring_revenue": 9451.83,
+  "dataset_label": "Synthetic cohort (200 rows)",
+  "generated_at": "2025-09-17T23:34:35.860503+00:00",
+  "customer_count": 200,
+  "churn_rate": 0.22,
+  "monthly_recurring_revenue": 3728.4700000000003,
   "at_risk_threshold": 0.6,
-  "at_risk_count": 46,
-  "at_risk_share": 0.092,
-  "revenue_at_risk_6m": 3284.7,
-  "weighted_revenue_at_risk_6m": 20231.395005244412,
+  "at_risk_count": 36,
+  "at_risk_share": 0.18,
+  "revenue_at_risk_6m": 3042.2999999999993,
+  "weighted_revenue_at_risk_6m": 4017.9757661911885,
   "rule_metrics": {
-    "accuracy": 0.606,
-    "precision": 0.4870848708487085,
-    "recall": 0.6947368421052632,
-    "true_positive": 132.0,
-    "true_negative": 171.0,
-    "false_positive": 139.0,
-    "false_negative": 58.0
+    "accuracy": 0.825,
+    "precision": 0.6,
+    "recall": 0.6136363636363636,
+    "true_positive": 27.0,
+    "true_negative": 138.0,
+    "false_positive": 18.0,
+    "false_negative": 17.0
   },
   "logistic_metrics": {
-    "accuracy": 0.62,
-    "precision": 0.5,
-    "recall": 0.3508771929824561,
-    "f1": 0.41237113402061853
+    "accuracy": 0.9666666666666667,
+    "precision": 1.0,
+    "recall": 0.8461538461538461,
+    "f1": 0.9166666666666666
   },
   "segment_highlights": {
     "tenure": {
@@ -34,38 +34,38 @@
         "36+"
       ],
       "churn_rate": [
-        0.521,
-        0.389,
-        0.427,
-        0.288,
+        0.576,
+        0.37,
+        0.123,
+        0.093,
         NaN
       ],
       "avg_monthly_spend": [
-        20.524,
-        20.047,
-        17.635,
-        18.896,
+        18.137,
+        20.357,
+        19.48,
+        17.522,
         NaN
       ],
       "avg_support_tickets": [
-        1.397,
-        1.306,
-        1.586,
-        1.51,
+        1.273,
+        1.148,
+        1.354,
+        1.68,
         NaN
       ],
       "avg_churn_probability": [
-        0.495,
-        0.482,
-        0.386,
-        0.296,
+        0.56,
+        0.348,
+        0.144,
+        0.09,
         NaN
       ],
       "customers": [
-        73,
-        72,
-        157,
-        198,
+        33,
+        27,
+        65,
+        75,
         0
       ]
     },
@@ -77,33 +77,33 @@
         "60+"
       ],
       "churn_rate": [
-        0.25,
-        0.315,
-        0.467,
+        0.0,
+        0.056,
+        0.414,
         NaN
       ],
       "avg_monthly_spend": [
-        17.772,
-        20.258,
-        18.73,
+        17.372,
+        18.137,
+        19.521,
         NaN
       ],
       "avg_support_tickets": [
-        1.411,
-        1.409,
-        1.559,
+        1.404,
+        1.352,
+        1.495,
         NaN
       ],
       "avg_churn_probability": [
-        0.259,
-        0.317,
-        0.463,
+        0.009,
+        0.072,
+        0.401,
         NaN
       ],
       "customers": [
-        112,
-        127,
-        261,
+        47,
+        54,
+        99,
         0
       ]
     },
@@ -115,34 +115,34 @@
         "6+"
       ],
       "churn_rate": [
-        0.379,
-        0.349,
-        0.469,
-        0.5
+        0.12,
+        0.225,
+        0.316,
+        1.0
       ],
       "avg_monthly_spend": [
-        20.035,
-        18.567,
-        18.883,
-        10.51
+        18.222,
+        18.953,
+        18.61,
+        6.37
       ],
       "avg_last_login_days": [
-        28.931,
-        31.602,
-        29.49,
-        25.75
+        28.42,
+        31.162,
+        30.105,
+        24.0
       ],
       "avg_churn_probability": [
-        0.338,
-        0.379,
-        0.425,
-        0.603
+        0.129,
+        0.222,
+        0.322,
+        0.725
       ],
       "customers": [
-        116,
-        284,
-        96,
-        4
+        50,
+        111,
+        38,
+        1
       ]
     },
     "plan_profile": {
@@ -152,29 +152,29 @@
         "Standard"
       ],
       "churn_rate": [
-        0.478,
-        0.372,
-        0.3
+        0.279,
+        0.279,
+        0.146
       ],
       "avg_monthly_spend": [
-        10.105,
-        33.135,
-        20.262
+        17.741,
+        18.066,
+        19.609
       ],
       "avg_support_tickets": [
-        1.565,
-        1.372,
-        1.473
+        1.588,
+        1.186,
+        1.438
       ],
       "avg_churn_probability": [
-        0.476,
-        0.372,
-        0.302
+        0.261,
+        0.263,
+        0.168
       ],
       "customers": [
-        186,
-        94,
-        220
+        68,
+        43,
+        89
       ]
     }
   },
@@ -198,48 +198,48 @@
       "support_tickets"
     ],
     "correlation": [
-      0.198,
-      -0.176,
-      -0.104,
-      0.092
+      0.492,
+      -0.41,
+      -0.228,
+      0.207
     ],
     "mean_delta_vs_retained": [
-      6.98,
-      -3.784,
-      -1.882,
-      0.232
+      20.001,
+      -9.988,
+      -4.775,
+      0.637
     ],
     "mutual_information": [
-      0.034,
-      0.009,
-      0.023,
-      0.0
+      0.163,
+      0.118,
+      0.03,
+      0.031
     ]
   },
   "logistic_coefficients": {
     "feature": [
-      "plan=Standard",
       "last_login_days",
       "tenure_months",
+      "plan=Standard",
       "monthly_spend",
       "support_tickets",
       "plan=Premium"
     ],
     "coefficient": [
-      -0.455,
-      0.43,
-      -0.408,
-      -0.213,
-      0.183,
-      0.052
+      2.763,
+      -2.012,
+      -1.916,
+      -1.528,
+      1.232,
+      0.692
     ],
     "odds_ratio": [
-      0.63,
-      1.54,
-      0.67,
-      0.81,
-      1.2,
-      1.05
+      15.85,
+      0.13,
+      0.15,
+      0.22,
+      3.43,
+      2.0
     ]
   }
 }

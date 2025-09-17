@@ -602,6 +602,7 @@ def write_html_report(markdown_text: str) -> None:
     html_doc = html_template.format(html_body=html_body)
     REPORT_HTML_PATH.write_text(html_doc, encoding="utf-8")
 
+
 def build_report(
     df: pd.DataFrame,
     churn_rate: float,
@@ -745,12 +746,11 @@ def build_report(
             "",
             "## 6. Synthetic Data Validation",
             "- Generate stress-test cohorts with `python generate_synthetic_churn.py --rows 1000 --output synthetic_customer_churn.csv`.",
-            "- Temporarily swap the synthetic file in place of `customer_churn_data.csv` and rerun `python Existing.py` to compare churn rate, driver ranking, and model metrics against historical trends.",
-            "- Watch for deviations (e.g., higher synthetic churn or different leading drivers) to adapt retention tactics for that scenario.",
+            "- Temporarily replace `customer_churn_data.csv` with the synthetic file and rerun `python Existing.py` to compare churn rate, driver ranking, and model performance.",
+            "- Watch for deviations (e.g., higher synthetic churn or different leading drivers) to understand how tactics should adjust.",
             "",
             "## 7. Visual Assets",
-            "- PNG figures are exported to `reports/figures/` for slide decks or the dashboard; inline images are omitted here to keep the report portable.",
-            "- The Streamlit dashboard surfaces these visuals interactively alongside filters.",
+            "- PNG figures are exported to `reports/figures/` for slide decks or the dashboard; inline images are omitted here to keep the markdown portable.",
             "",
             "## 8. Recommendations & Next Steps",
             "1. Prioritize outreach for short-tenure, low-spend customers who recently filed multiple tickets and have been inactive; they trigger most rule conditions.",
@@ -768,7 +768,7 @@ def build_report(
     )
 
     report_lines.append("")
-    return "\\n".join(report_lines)
+    return "\n".join(report_lines)
 
 
 def print_section(title: str, lines: Iterable[str]) -> None:
@@ -908,7 +908,6 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-
 
 
 

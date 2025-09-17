@@ -35,10 +35,19 @@ pandoc reports/churn_analysis_report.md -o churn_analysis_report.pdf
 
 ## Generate Synthetic Data
 
-Quickly create stress-test datasets that mirror the original schema:
+Quickly create stress-test datasets that mirror the original schema and run a full analysis without swapping files:
 
-```bash
+`ash
+python run_synthetic_analysis.py --rows 1000
+`
+
+That command learns feature distributions from customer_churn_data.csv, writes the synthetic dataset (default synthetic_customer_churn.csv), and saves all outputs under eports/synthetic/. Point Streamlit at that directory to compare findings.
+
+Need more control? Generate only the data first:
+
+`ash
 python generate_synthetic_churn.py --rows 1000 --output synthetic_customer_churn.csv
-```
+`
 
-The script samples feature distributions from the source data and uses a logistic regression model to assign churn probabilities and labels. Swap the synthetic CSV in place of `customer_churn_data.csv` (or point `Existing.py` to it), rerun the pipeline, and compare churn rate, driver rankings, and model metrics in the refreshed report to understand how retention strategy should adapt under different scenarios.
+Then run the main pipeline manually with python Existing.py after temporarily redirecting Existing.DATA_PATH or swapping the CSV.
+

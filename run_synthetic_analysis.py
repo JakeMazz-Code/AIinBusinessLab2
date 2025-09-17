@@ -43,6 +43,7 @@ def main() -> None:
     synthetic_df.to_csv(args.output, index=False)
 
     configure_existing(args.output, report_dir)
+    Existing.DATA_LABEL = f"Synthetic cohort ({args.rows} rows)"
     Existing.ensure_output_dirs()
     Existing.main()
 

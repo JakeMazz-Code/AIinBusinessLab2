@@ -58,6 +58,8 @@ REPORT_PATH = REPORT_DIR / "churn_analysis_report.md"
 REPORT_HTML_PATH = REPORT_DIR / "churn_analysis_report.html"
 PREDICTIONS_PATH = REPORT_DIR / "churn_risk_scoring.csv"
 SUMMARY_PATH = REPORT_DIR / "metrics_summary.json"
+DATA_LABEL = "Historical dataset"
+
 
 NUMERIC_FEATURES = [
     "tenure_months",
@@ -603,6 +605,7 @@ def write_html_report(markdown_text: str) -> None:
     REPORT_HTML_PATH.write_text(html_doc, encoding="utf-8")
 
 
+
 def build_report(
     df: pd.DataFrame,
     churn_rate: float,
@@ -623,6 +626,7 @@ def build_report(
     top_risk: pd.DataFrame,
 ) -> str:
     timestamp = datetime.now(UTC).strftime("%Y-%m-%d %H:%M UTC")
+    dataset_label = DATA_LABEL
 
     top_features = ranking.head(3).round(3)
     top_plan = plan_churn.head(1)
@@ -632,6 +636,8 @@ def build_report(
     report_lines = [
         "# Customer Churn Analysis Report",
         f"_Generated on {timestamp}_",
+        "",
+        f"Dataset analysed: {dataset_label}",
         "",
         "## Executive Brief",
         "**Snapshot**",
@@ -655,14 +661,14 @@ def build_report(
             "## 1. Business Snapshot",
             f"- Total customers analyzed: {len(df)}",
             f"- Overall churn rate: {churn_rate:.1%} (approximately 1 in {int(round(1 / churn_rate))} customers)",
-            f"- Monthly recurring revenue: ${revenue_summary['monthly_recurring_revenue']:,.0f}",
+            f"- Monthly recurring revenue: ",
             (
                 f"- High-risk customers (probability = {revenue_summary['threshold']:.0%}): "
                 f"{revenue_summary['at_risk_count']} ({revenue_summary['at_risk_share']:.1%} of base)"
             ),
             (
                 f"- Probability-weighted revenue at risk over {FORECAST_MONTHS} months: "
-                f"${revenue_summary['weighted_loss_6m']:,.0f}"
+                f""
             ),
             "",
             "### Cohort Averages (0 = retained, 1 = churned)",
@@ -723,34 +729,55 @@ def build_report(
             f"- Confusion matrix counts (TP/TN/FP/FN): {int(logistic_confusion['true_positive'])}/{int(logistic_confusion['true_negative'])}/{int(logistic_confusion['false_positive'])}/{int(logistic_confusion['false_negative'])}",
             "",
             "Classification report (test set):",
-            "```",
+            "`",
             logistic_report.strip(),
-            "```",
+            "`",
             "",
             "## 5. Revenue Impact & High-Risk Cohort",
             (
-                f"- Customers flagged as high risk (? {revenue_summary['threshold']:.0%} probability): "
+                f"- Customers flagged as high risk (= {revenue_summary['threshold']:.0%} probability): "
                 f"{revenue_summary['at_risk_count']} averaging {revenue_summary['avg_probability_at_risk']:.0%} churn likelihood."
             ),
             (
                 f"- Revenue exposure if high-risk customers churn (6-month projection): "
-                f"${revenue_summary['threshold_loss_6m']:,.0f}."
+                f"."
             ),
             (
                 f"- Probability-weighted loss estimate (6-month projection): "
-                f"${revenue_summary['weighted_loss_6m']:,.0f}."
+                f"."
             ),
             "",
             "### Highest-Risk Customers (Top 10 by Logistic Probability)",
             format_dataframe_block(top_risk.round({"logistic_probability": 3})),
             "",
-            "## 6. Synthetic Data Validation",
-            "- Generate stress-test cohorts with `python generate_synthetic_churn.py --rows 1000 --output synthetic_customer_churn.csv`.",
-            "- Temporarily replace `customer_churn_data.csv` with the synthetic file and rerun `python Existing.py` to compare churn rate, driver ranking, and model performance.",
-            "- Watch for deviations (e.g., higher synthetic churn or different leading drivers) to understand how tactics should adjust.",
-            "",
+        ]
+    )
+
+    if dataset_label.lower().startswith("synthetic"):
+        report_lines.extend(
+            [
+                "## 6. Synthetic Cohort Summary",
+                "- This report was generated from a synthetic dataset to pressure-test retention strategies.",
+                "- Compare these metrics against the historical baseline to confirm whether top drivers and high-risk segments remain consistent.",
+                "- Investigate any major divergences (e.g., higher churn rate, new leading drivers) before rolling out campaigns.",
+                "",
+            ]
+        )
+    else:
+        report_lines.extend(
+            [
+                "## 6. Synthetic Data Validation",
+                "- Generate a stress-test cohort with `python run_synthetic_analysis.py --rows 1000`.",
+                "- Review the outputs under `reports/synthetic/` to confirm findings hold for alternate scenarios.",
+                "- Track how churn rate, driver ranking, and model metrics shift to refine the retention plan.",
+                "",
+            ]
+        )
+
+    report_lines.extend(
+        [
             "## 7. Visual Assets",
-            "- PNG figures are exported to `reports/figures/` for slide decks or the dashboard; inline images are omitted here to keep the markdown portable.",
+            "- PNG figures are exported to `reports/figures/` for slide decks or exploration in the dashboard.",
             "",
             "## 8. Recommendations & Next Steps",
             "1. Prioritize outreach for short-tenure, low-spend customers who recently filed multiple tickets and have been inactive; they trigger most rule conditions.",
@@ -759,18 +786,16 @@ def build_report(
             "4. Collect additional behavioral signals (content engagement, satisfaction scores) and validate the models on a future cohort or synthetic holdout set before deployment.",
             "",
             "## 9. Deliverables",
-            f"- Executive summary: `{REPORT_PATH.name}`",
-            f"- HTML report: `{REPORT_HTML_PATH.name}`",
-            f"- Visualizations directory: `{FIGURES_DIR.name}/`",
-            f"- Customer-level scores: `{PREDICTIONS_PATH.name}`",
-            f"- Metrics summary (Streamlit ready): `{SUMMARY_PATH.name}`",
+            f"- Executive summary: {REPORT_PATH.name}",
+            f"- HTML report: {REPORT_HTML_PATH.name}",
+            f"- Visualizations directory: {FIGURES_DIR.name}/",
+            f"- Customer-level scores: {PREDICTIONS_PATH.name}",
+            f"- Metrics summary (Streamlit ready): {SUMMARY_PATH.name}",
         ]
     )
 
     report_lines.append("")
     return "\n".join(report_lines)
-
-
 def print_section(title: str, lines: Iterable[str]) -> None:
     border = "=" * len(title)
     print(border)
@@ -861,6 +886,7 @@ def main() -> None:
     write_html_report(report_text)
 
     summary_payload: Dict[str, Any] = {
+        "dataset_label": DATA_LABEL,
         "generated_at": datetime.now(UTC).isoformat(),
         "customer_count": len(df),
         "churn_rate": float(metrics["churn_rate"]),

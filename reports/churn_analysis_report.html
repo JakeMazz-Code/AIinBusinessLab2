@@ -7,7 +7,8 @@
 </head>
 <body>
 <h1>Customer Churn Analysis Report</h1>
-<p><em>Generated on 2025-09-17 22:51 UTC</em></p>
+<p><em>Generated on 2025-09-17 23:20 UTC</em></p>
+<p>Dataset analysed: Historical dataset</p>
 <h2>Executive Brief</h2>
 <p><strong>Snapshot</strong>
 - Overall churn rate sits at 38.0% (~1 in 3 customers) with monthly revenue of $9,452.
@@ -26,9 +27,9 @@
 <ul>
 <li>Total customers analyzed: 500</li>
 <li>Overall churn rate: 38.0% (approximately 1 in 3 customers)</li>
-<li>Monthly recurring revenue: $9,452</li>
+<li>Monthly recurring revenue: </li>
 <li>High-risk customers (probability = 60%): 46 (9.2% of base)</li>
-<li>Probability-weighted revenue at risk over 6 months: $20,231</li>
+<li>Probability-weighted revenue at risk over 6 months: </li>
 </ul>
 <h3>Cohort Averages (0 = retained, 1 = churned)</h3>
 <p><code>tenure_months  monthly_spend  support_tickets  last_login_days
@@ -116,7 +117,7 @@ Standard         0.30              20.26                 1.47                   
 <li>Confusion matrix counts (TP/TN/FP/FN): 20/73/20/37</li>
 </ul>
 <p>Classification report (test set):
-```
+`
 precision    recall  f1-score   support</p>
 <pre><code>       0       0.66      0.78      0.72        93
        1       0.50      0.35      0.41        57
@@ -125,12 +126,12 @@ accuracy                           0.62       150
 </code></pre>
 <p>macro avg       0.58      0.57      0.57       150
 weighted avg       0.60      0.62      0.60       150
-```</p>
+`</p>
 <h2>5. Revenue Impact &amp; High-Risk Cohort</h2>
 <ul>
-<li>Customers flagged as high risk (? 60% probability): 46 averaging 67% churn likelihood.</li>
-<li>Revenue exposure if high-risk customers churn (6-month projection): $3,285.</li>
-<li>Probability-weighted loss estimate (6-month projection): $20,231.</li>
+<li>Customers flagged as high risk (= 60% probability): 46 averaging 67% churn likelihood.</li>
+<li>Revenue exposure if high-risk customers churn (6-month projection): .</li>
+<li>Probability-weighted loss estimate (6-month projection): .</li>
 </ul>
 <h3>Highest-Risk Customers (Top 10 by Logistic Probability)</h3>
 <p><code>customer_id  logistic_probability  rule_flag  tenure_months  monthly_spend  support_tickets  last_login_days plan_type
@@ -146,13 +147,13 @@ weighted avg       0.60      0.62      0.60       150
 277          278                  0.71          1              2          14.85                1               53     Basic</code></p>
 <h2>6. Synthetic Data Validation</h2>
 <ul>
-<li>Generate stress-test cohorts with <code>python generate_synthetic_churn.py --rows 1000 --output synthetic_customer_churn.csv</code>.</li>
-<li>Temporarily replace <code>customer_churn_data.csv</code> with the synthetic file and rerun <code>python Existing.py</code> to compare churn rate, driver ranking, and model performance.</li>
-<li>Watch for deviations (e.g., higher synthetic churn or different leading drivers) to understand how tactics should adjust.</li>
+<li>Generate a stress-test cohort with <code>python run_synthetic_analysis.py --rows 1000</code>.</li>
+<li>Review the outputs under <code>reports/synthetic/</code> to confirm findings hold for alternate scenarios.</li>
+<li>Track how churn rate, driver ranking, and model metrics shift to refine the retention plan.</li>
 </ul>
 <h2>7. Visual Assets</h2>
 <ul>
-<li>PNG figures are exported to <code>reports/figures/</code> for slide decks or the dashboard; inline images are omitted here to keep the markdown portable.</li>
+<li>PNG figures are exported to <code>reports/figures/</code> for slide decks or exploration in the dashboard.</li>
 </ul>
 <h2>8. Recommendations &amp; Next Steps</h2>
 <ol>
@@ -163,11 +164,11 @@ weighted avg       0.60      0.62      0.60       150
 </ol>
 <h2>9. Deliverables</h2>
 <ul>
-<li>Executive summary: <code>churn_analysis_report.md</code></li>
-<li>HTML report: <code>churn_analysis_report.html</code></li>
-<li>Visualizations directory: <code>figures/</code></li>
-<li>Customer-level scores: <code>churn_risk_scoring.csv</code></li>
-<li>Metrics summary (Streamlit ready): <code>metrics_summary.json</code></li>
+<li>Executive summary: churn_analysis_report.md</li>
+<li>HTML report: churn_analysis_report.html</li>
+<li>Visualizations directory: figures/</li>
+<li>Customer-level scores: churn_risk_scoring.csv</li>
+<li>Metrics summary (Streamlit ready): metrics_summary.json</li>
 </ul>
 </body>
 </html>

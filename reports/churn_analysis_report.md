@@ -1,5 +1,7 @@
 # Customer Churn Analysis Report
-_Generated on 2025-09-17 22:51 UTC_
+_Generated on 2025-09-17 23:20 UTC_
+
+Dataset analysed: Historical dataset
 
 ## Executive Brief
 **Snapshot**
@@ -19,9 +21,9 @@ _Generated on 2025-09-17 22:51 UTC_
 ## 1. Business Snapshot
 - Total customers analyzed: 500
 - Overall churn rate: 38.0% (approximately 1 in 3 customers)
-- Monthly recurring revenue: $9,452
+- Monthly recurring revenue: 
 - High-risk customers (probability = 60%): 46 (9.2% of base)
-- Probability-weighted revenue at risk over 6 months: $20,231
+- Probability-weighted revenue at risk over 6 months: 
 
 ### Cohort Averages (0 = retained, 1 = churned)
 ```
@@ -135,7 +137,7 @@ Evaluation (entire dataset):
 - Confusion matrix counts (TP/TN/FP/FN): 20/73/20/37
 
 Classification report (test set):
-```
+`
 precision    recall  f1-score   support
 
            0       0.66      0.78      0.72        93
@@ -144,12 +146,12 @@ precision    recall  f1-score   support
     accuracy                           0.62       150
    macro avg       0.58      0.57      0.57       150
 weighted avg       0.60      0.62      0.60       150
-```
+`
 
 ## 5. Revenue Impact & High-Risk Cohort
-- Customers flagged as high risk (? 60% probability): 46 averaging 67% churn likelihood.
-- Revenue exposure if high-risk customers churn (6-month projection): $3,285.
-- Probability-weighted loss estimate (6-month projection): $20,231.
+- Customers flagged as high risk (= 60% probability): 46 averaging 67% churn likelihood.
+- Revenue exposure if high-risk customers churn (6-month projection): .
+- Probability-weighted loss estimate (6-month projection): .
 
 ### Highest-Risk Customers (Top 10 by Logistic Probability)
 ```
@@ -167,12 +169,12 @@ weighted avg       0.60      0.62      0.60       150
 ```
 
 ## 6. Synthetic Data Validation
-- Generate stress-test cohorts with `python generate_synthetic_churn.py --rows 1000 --output synthetic_customer_churn.csv`.
-- Temporarily replace `customer_churn_data.csv` with the synthetic file and rerun `python Existing.py` to compare churn rate, driver ranking, and model performance.
-- Watch for deviations (e.g., higher synthetic churn or different leading drivers) to understand how tactics should adjust.
+- Generate a stress-test cohort with `python run_synthetic_analysis.py --rows 1000`.
+- Review the outputs under `reports/synthetic/` to confirm findings hold for alternate scenarios.
+- Track how churn rate, driver ranking, and model metrics shift to refine the retention plan.
 
 ## 7. Visual Assets
-- PNG figures are exported to `reports/figures/` for slide decks or the dashboard; inline images are omitted here to keep the markdown portable.
+- PNG figures are exported to `reports/figures/` for slide decks or exploration in the dashboard.
 
 ## 8. Recommendations & Next Steps
 1. Prioritize outreach for short-tenure, low-spend customers who recently filed multiple tickets and have been inactive; they trigger most rule conditions.
@@ -181,8 +183,8 @@ weighted avg       0.60      0.62      0.60       150
 4. Collect additional behavioral signals (content engagement, satisfaction scores) and validate the models on a future cohort or synthetic holdout set before deployment.
 
 ## 9. Deliverables
-- Executive summary: `churn_analysis_report.md`
-- HTML report: `churn_analysis_report.html`
-- Visualizations directory: `figures/`
-- Customer-level scores: `churn_risk_scoring.csv`
-- Metrics summary (Streamlit ready): `metrics_summary.json`
+- Executive summary: churn_analysis_report.md
+- HTML report: churn_analysis_report.html
+- Visualizations directory: figures/
+- Customer-level scores: churn_risk_scoring.csv
+- Metrics summary (Streamlit ready): metrics_summary.json

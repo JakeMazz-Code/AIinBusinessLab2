@@ -1,5 +1,6 @@
 {
-  "generated_at": "2025-09-17T22:51:01.042339+00:00",
+  "dataset_label": "Historical dataset",
+  "generated_at": "2025-09-17T23:20:21.522160+00:00",
   "customer_count": 500,
   "churn_rate": 0.38,
   "monthly_recurring_revenue": 9451.83,

@@ -59,3 +59,4 @@ pandoc reports/churn_analysis_report.md -o churn_analysis_report.pdf
 
 - If the dashboard can't find outputs, rerun `python Existing.py` (historical) or `python run_synthetic_analysis.py` (synthetic).
 - Keep dependencies in sync with `python -m pip install -r requirements.txt` before running the pipelines.
+- Verify everything compiles cleanly with `python -m compileall dashboard.py`.
